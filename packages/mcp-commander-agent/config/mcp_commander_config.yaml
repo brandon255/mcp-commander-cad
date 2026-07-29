@@ -1,0 +1,57 @@
+# MCP Commander Agent Configuration
+# Controls how MCP Commander connects to CAD MCP servers, processes voice,
+# and interacts with the LLM for intent parsing.
+#
+# Environment variables referenced below (e.g. ANTHROPIC_API_KEY) should be
+# exported in your shell before running MCP Commander.
+
+# MCP server definitions - one entry per CAD application.
+mcp_servers:
+  solidworks:
+    command: "solidworks-mcp"
+    transport: "stdio"
+
+  fusion360:
+    command: "fusion360-mcp"
+    transport: "stdio"
+
+  # NEW: Analysis layer — vision, OCR, geometry recognition, DFM, RAG tutorials
+  # Provides the "eyes and brain" that complement the CAD creation tools.
+  # Set OPENAI_API_KEY or ANTHROPIC_API_KEY in your environment to enable
+  # real VLM drawing analysis (otherwise it returns a mock response).
+  analysis:
+    command: "mcp-commander-analysis"
+    transport: "stdio"
+
+# Voice input/output settings
+voice:
+  enabled: true
+  model: "base"
+  language: "en"
+  tts_enabled: true
+  tts_voice: "default"
+  tts_backend: "pyttsx3"
+  sample_rate: 16000
+  vad_threshold: 0.5
+  silence_timeout: 2.0
+  max_record_seconds: 30.0
+
+# LLM configuration for intent parsing
+llm:
+  provider: "anthropic"
+  model: "claude-sonnet-5"
+  api_key_env: "ANTHROPIC_API_KEY"
+  base_url: null
+  temperature: 0.1
+  max_tokens: 4096
+  system_prompt: |
+    You are MCP Commander, an AI assistant that controls CAD software (Solidworks and Fusion 360) via MCP tools.
+    The user gives you voice/text commands for engineering tasks. Parse their intent and call the appropriate MCP tools.
+    Always confirm what you're about to do before executing destructive operations.
+    Respond concisely with status updates.
+
+# Logging settings
+logging:
+  level: "INFO"
+  file: "mcp-commander.log"
+  console: true

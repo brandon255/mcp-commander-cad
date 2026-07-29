@@ -1,0 +1,16 @@
+{
+  "name": "mcp-commander-ideas",
+  "version": "1.0.0",
+  "description": "Design ideation and brainstorming cartridge. Provides tools for generating design alternatives, capturing ideas, and exploring manufacturing methods.",
+  "permissions": {
+    "writeTiers": ["hot"],
+    "allowedStages": ["knowledge"]
+  },
+  "tools": [
+    { "name": "generate_alternatives", "description": "Generate alternative design approaches for a given design intent" },
+    { "name": "explore_manufacturing_methods", "description": "Explore uncommon or non-traditional manufacturing methods for a design" },
+    { "name": "capture_idea", "description": "Capture and store a design idea with metadata for later retrieval" },
+    { "name": "search_ideas", "description": "Search stored design ideas by keyword, category, or project" },
+    { "name": "cross_domain_transfer", "description": "Transfer design solutions from one industry domain to another" }
+  ]
+}

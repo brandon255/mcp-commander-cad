@@ -1,0 +1,17 @@
+{
+  "name": "mcp-commander-quoting",
+  "version": "1.0.0",
+  "description": "Cost estimation and quoting cartridge. Provides tools for material cost calculation, machining time estimation, and quote generation for manufactured parts.",
+  "permissions": {
+    "writeTiers": ["hot", "warm"],
+    "allowedStages": ["analysis", "knowledge"]
+  },
+  "tools": [
+    { "name": "estimate_material_cost", "description": "Calculate material cost based on part volume and material properties" },
+    { "name": "estimate_machining_time", "description": "Estimate CNC machining time based on part complexity and volume" },
+    { "name": "generate_quote", "description": "Generate a manufacturing cost quote with material, labor, and overhead breakdown" },
+    { "name": "compare_processes", "description": "Compare cost of different manufacturing processes (CNC, 3DP, casting, sheet metal)" },
+    { "name": "calculate_lead_time", "description": "Estimate manufacturing lead time based on part complexity and process" },
+    { "name": "lookup_machinability", "description": "Look up machinability ratings and recommended speeds/feeds for a material" }
+  ]
+}

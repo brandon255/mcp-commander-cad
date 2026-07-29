@@ -1,0 +1,18 @@
+{
+  "name": "mcp-commander-materials",
+  "version": "1.0.0",
+  "description": "Material selection and property lookup cartridge. Provides tools for searching engineering materials, comparing properties, and recommending substitutions based on functional requirements.",
+  "permissions": {
+    "writeTiers": ["hot"],
+    "allowedStages": ["analysis", "knowledge"]
+  },
+  "tools": [
+    {"name": "search_materials", "description": "Search engineering materials database by name, category, or property range"},
+    {"name": "get_material_properties", "description": "Get detailed mechanical, thermal, and chemical properties for a specific material"},
+    {"name": "compare_materials", "description": "Compare properties of multiple materials side by side"},
+    {"name": "recommend_substitution", "description": "Suggest material substitutions based on functional requirements and constraints"},
+    {"name": "check_compatibility", "description": "Check material compatibility for specific environments or processes"},
+    {"name": "get_cost_estimate", "description": "Get relative cost estimate for a material per unit weight or volume"},
+    {"name": "lookup_supplier", "description": "Look up potential suppliers for a given material and form"}
+  ]
+}

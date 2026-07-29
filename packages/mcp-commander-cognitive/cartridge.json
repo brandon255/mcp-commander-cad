@@ -1,0 +1,20 @@
+{
+  "name": "mcp-commander-cognitive",
+  "version": "1.0.0",
+  "description": "Cognitive architecture cartridge implementing 9 background operations for engineering design intelligence: divergent thinking, convergent thinking, cross-domain transfer, uncommon methods, pattern recognition, compression thinking, spatial reasoning, context diagnostics, and design rationale.",
+  "permissions": {
+    "writeTiers": ["hot", "warm"],
+    "allowedStages": ["analysis", "knowledge", "validation"]
+  },
+  "tools": [
+    {"name": "divergent_thinking", "description": "Generate alternative design approaches for a given design intent or constraint set"},
+    {"name": "convergent_thinking", "description": "Evaluate and rank design alternatives against constraints (cost, weight, manufacturability, strength)"},
+    {"name": "cross_domain_transfer", "description": "Transfer proven design solutions from one industry domain to another"},
+    {"name": "uncommon_methods", "description": "Suggest non-traditional manufacturing methods (3D printed jigs, foam tooling, additive casting, etc.)"},
+    {"name": "pattern_recognition", "description": "Identify recurring design inefficiencies and patterns across projects"},
+    {"name": "compression_thinking", "description": "Simplify over-engineered assemblies by identifying redundant features and consolidation opportunities"},
+    {"name": "spatial_reasoning", "description": "Infer 3D spatial relationships from voice/text descriptions of geometry"},
+    {"name": "context_diagnostics", "description": "Identify missing constraints, incomplete definitions, and gaps in a design description"},
+    {"name": "design_rationale", "description": "Capture and retrieve design rationale linking decisions to engineering requirements"}
+  ]
+}

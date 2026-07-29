@@ -1,0 +1,18 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "mcp-commander-quoting"
+version = "0.1.0"
+description = "Cost estimation and quoting MCP cartridge for MCP Commander"
+requires-python = ">=3.10"
+dependencies = [
+    "mcp>=1.0.0,<2.0.0",
+]
+
+[project.scripts]
+mcp-commander-quoting = "mcp_commander_quoting.server:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/mcp_commander_quoting"]

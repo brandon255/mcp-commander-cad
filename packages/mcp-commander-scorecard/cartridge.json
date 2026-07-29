@@ -1,0 +1,15 @@
+{
+  "name": "mcp-commander-scorecard",
+  "version": "1.0.0",
+  "description": "Design evaluation and scoring cartridge. Provides weighted scoring matrices for comparing design alternatives against requirements.",
+  "permissions": {
+    "writeTiers": ["hot"],
+    "allowedStages": ["analysis", "validation"]
+  },
+  "tools": [
+    { "name": "create_scorecard", "description": "Create a weighted evaluation scorecard for a design decision" },
+    { "name": "score_alternative", "description": "Score a design alternative against a scorecard criteria" },
+    { "name": "compare_alternatives", "description": "Compare multiple scored alternatives and rank them" },
+    { "name": "export_scorecard", "description": "Export a scorecard comparison as structured data for documentation" }
+  ]
+}

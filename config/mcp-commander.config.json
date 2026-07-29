@@ -1,0 +1,38 @@
+{
+  "status": "DRAFT",
+  "pilot_seats": [],
+  "pricing_model": null,
+  "packet_cap": null,
+  "llm": {
+    "backend": "ollama",
+    "model": "llama3:8b",
+    "base_url": "http://localhost:11434",
+    "timeout_ms": 30000
+  },
+  "memory": {
+    "idle_threshold_ms": 300000,
+    "max_hot_entries": 10000
+  },
+  "gates": {
+    "min_why_length": 20,
+    "approve_token": "APPROVE"
+  },
+  "telemetry": {
+    "enabled": true,
+    "hmac_pseudonym": true
+  },
+  "redact": {
+    "patterns": [
+      "ssn",
+      "credit_card",
+      "phone",
+      "email",
+      "api_key"
+    ]
+  },
+  "storage": {
+    "encryption_algorithm": "aes-256-gcm",
+    "key_derivation": "pbkdf2",
+    "iterations": 100000
+  }
+}

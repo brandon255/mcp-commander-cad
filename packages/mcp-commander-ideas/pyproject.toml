@@ -1,0 +1,18 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "mcp-commander-ideas"
+version = "0.1.0"
+description = "Design ideation and brainstorming MCP cartridge for MCP Commander"
+requires-python = ">=3.10"
+dependencies = [
+    "mcp>=1.0.0,<2.0.0",
+]
+
+[project.scripts]
+mcp-commander-ideas = "mcp_commander_ideas.server:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/mcp_commander_ideas"]

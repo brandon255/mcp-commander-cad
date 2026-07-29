@@ -1,0 +1,19 @@
+{
+  "name": "mcp-commander-analysis",
+  "version": "1.0.0",
+  "description": "Vision, OCR, VLM, and knowledge tools for CAD design analysis. Provides image understanding, text extraction, and engineering knowledge lookup.",
+  "permissions": {
+    "writeTiers": ["hot"],
+    "allowedStages": ["analysis", "validation", "knowledge", "ocr"]
+  },
+  "tools": [
+    { "name": "analyze_image", "description": "Analyze a CAD screenshot or design image using vision AI" },
+    { "name": "detect_features", "description": "Detect CAD features and geometry in a design image" },
+    { "name": "compare_designs", "description": "Compare two designs and highlight differences" },
+    { "name": "extract_text", "description": "Extract text from drawings, blueprints, or screenshots via OCR" },
+    { "name": "extract_dimensions", "description": "Extract dimension values from engineering drawings" },
+    { "name": "lookup_material", "description": "Look up material properties and specifications from engineering databases" },
+    { "name": "lookup_standard", "description": "Look up design standards (ISO, ASME, ANSI) for compliance checks" },
+    { "name": "validate_geometry", "description": "Validate CAD geometry for manufacturability and design rule compliance" }
+  ]
+}

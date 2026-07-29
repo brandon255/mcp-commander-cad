@@ -1,0 +1,31 @@
+{
+  "name": "file-translator-mcp",
+  "version": "1.0.0",
+  "description": "CAD file format translator. Converts between STL, STEP, IGES, OBJ, PLY, 3MF, DXF formats with mesh repair and analysis capabilities.",
+  "permissions": {
+    "writeTiers": ["hot"],
+    "allowedStages": ["import", "export"]
+  },
+  "tools": [
+    { "name": "convert_file", "description": "Convert between CAD file formats (STL, STEP, IGES, OBJ, PLY, 3MF, DXF)" },
+    { "name": "stl_to_step", "description": "Convert STL mesh to STEP B-rep with surface reconstruction" },
+    { "name": "stl_to_iges", "description": "Convert STL mesh to IGES format" },
+    { "name": "step_to_stl", "description": "Convert STEP to STL mesh" },
+    { "name": "step_to_iges", "description": "Convert STEP to IGES" },
+    { "name": "iges_to_step", "description": "Convert IGES to STEP" },
+    { "name": "iges_to_stl", "description": "Convert IGES to STL mesh" },
+    { "name": "obj_to_stl", "description": "Convert OBJ to STL" },
+    { "name": "obj_to_step", "description": "Convert OBJ mesh to STEP B-rep" },
+    { "name": "ply_to_stl", "description": "Convert PLY point cloud/mesh to STL" },
+    { "name": "batch_convert", "description": "Convert multiple files to a target format in batch" },
+    { "name": "analyze_mesh", "description": "Analyze mesh properties (triangles, volume, watertight status)" },
+    { "name": "detect_format", "description": "Auto-detect CAD file format from header bytes" },
+    { "name": "get_file_info", "description": "Get detailed file information (size, format, encoding)" },
+    { "name": "repair_mesh", "description": "Repair common mesh defects (non-manifold edges, holes, degeneracies)" },
+    { "name": "simplify_mesh", "description": "Reduce triangle count while preserving shape" },
+    { "name": "fill_holes", "description": "Fill holes in non-watertight meshes" },
+    { "name": "make_watertight", "description": "Ensure mesh is watertight for B-rep conversion" },
+    { "name": "remove_degenerate", "description": "Remove degenerate and zero-area triangles" },
+    { "name": "merge_vertices", "description": "Merge duplicate vertices to clean mesh" }
+  ]
+}

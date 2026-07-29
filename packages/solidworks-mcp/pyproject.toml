@@ -1,0 +1,19 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "solidworks-mcp"
+version = "0.1.0"
+description = "MCP server for Solidworks automation via COM API"
+requires-python = ">=3.10"
+dependencies = [
+    "mcp>=1.0.0,<2.0.0",
+    "pywin32>=306",
+]
+
+[project.scripts]
+solidworks-mcp = "solidworks_mcp.server:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/solidworks_mcp"]

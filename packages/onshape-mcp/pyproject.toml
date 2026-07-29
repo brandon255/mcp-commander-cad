@@ -1,0 +1,19 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "onshape-mcp"
+version = "0.1.0"
+description = "MCP server for Onshape cloud CAD automation via REST API"
+requires-python = ">=3.10"
+dependencies = [
+    "mcp>=1.0.0,<2.0.0",
+    "httpx>=0.25.0",
+]
+
+[project.scripts]
+onshape-mcp = "onshape_mcp.server:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/onshape_mcp"]

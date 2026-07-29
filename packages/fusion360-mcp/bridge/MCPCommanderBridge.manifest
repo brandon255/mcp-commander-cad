@@ -1,0 +1,28 @@
+{
+  "autodeskProduct": "Fusion 360",
+  "type": "addin",
+  "author": "Doctrine Labs",
+  "description": {
+    "en": "MCP Commander Bridge — local HTTP server that exposes Fusion 360 API operations as JSON commands for AI agent integration via the Model Context Protocol."
+  },
+  "displayName": {
+    "en": "MCP Commander Bridge"
+  },
+  "editUrl": "",
+  "groupId": "",
+  "keywords": [
+    "MCP",
+    "AI",
+    "automation",
+    "bridge",
+    "voice",
+    "agent",
+    "commander"
+  ],
+  "os": [
+    "windows",
+    "mac"
+  ],
+  "packages": {},
+  "version": "1.0.0"
+}

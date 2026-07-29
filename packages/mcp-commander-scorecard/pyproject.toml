@@ -1,0 +1,18 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "mcp-commander-scorecard"
+version = "0.1.0"
+description = "Design evaluation and scoring MCP cartridge for MCP Commander"
+requires-python = ">=3.10"
+dependencies = [
+    "mcp>=1.0.0,<2.0.0",
+]
+
+[project.scripts]
+mcp-commander-scorecard = "mcp_commander_scorecard.server:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/mcp_commander_scorecard"]
