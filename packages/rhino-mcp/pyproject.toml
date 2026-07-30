@@ -1,0 +1,19 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "rhino-mcp"
+version = "0.1.0"
+description = "MCP server for Rhino automation via an in-process plugin + local HTTP bridge"
+requires-python = ">=3.10"
+dependencies = [
+    "mcp>=1.0.0,<2.0.0",
+    "httpx>=0.25.0",
+]
+
+[project.scripts]
+rhino-mcp = "rhino_mcp.server:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/rhino_mcp"]

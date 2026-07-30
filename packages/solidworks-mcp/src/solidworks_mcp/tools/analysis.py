@@ -4,10 +4,23 @@ Provides sketch validation, feature tree analysis, model properties,
 measurements, DFM checks, weld inspection, dimension comparison,
 section properties, and interference detection via the COM API.
 """
-from solidworks_mcp.api.connection import get_sw_app, get_active_doc
+from solidworks_mcp.api.connection import get_sw_app, get_active_doc, get_diagnostics, wrap_as
 
 
 def register_analysis_tools(mcp):
+    @mcp.tool()
+    def connection_diagnostics() -> str:
+        """Report the Solidworks COM connection state for debugging.
+
+        Returns the PID(s) of running SLDWORKS.EXE processes, whether the
+        bridge is currently attached via COM, and the count/names of open
+        documents plus the active document. Use this to distinguish "no
+        Solidworks running" from "attached but no active document" from a
+        stale/dead COM reference.
+        """
+        import json
+        return json.dumps(get_diagnostics(), indent=2)
+
     @mcp.tool()
     def validate_sketch_constraints(sketch_name: str = "") -> str:
         """Validate the active sketch for constraint completeness.
@@ -126,10 +139,13 @@ def register_analysis_tools(mcp):
             import json
             import math
             doc = get_active_doc()
-            feature_mgr = doc.FeatureManager
 
+            # FirstFeature/GetNextFeature/GetParentFeature live on the document
+            # (IModelDoc2), not on FeatureManager - and they return a generic
+            # IDispatch that needs an explicit IFeature wrap to resolve real
+            # members like GetTypeName2/IsSuppressed/GetNextFeature.
             features = []
-            feat = feature_mgr.FirstFeature()
+            feat = wrap_as(doc.FirstFeature(), "IFeature")
 
             while feat is not None:
                 feat_info = {}
@@ -151,13 +167,19 @@ def register_analysis_tools(mcp):
                 except Exception:
                     feat_info["state"] = "unknown"
 
-                # Parent features (dependencies)
+                # Parent features (dependencies) - GetParentFeature does not
+                # exist in the real API; the real method is GetParents(),
+                # which returns an array of this feature's direct parents
+                # (not a chain requiring further traversal).
                 try:
                     parents = []
-                    parent_feat = feat.GetParentFeature()
-                    while parent_feat is not None:
-                        parents.append(parent_feat.Name)
-                        parent_feat = parent_feat.GetParentFeature()
+                    parent_array = feat.GetParents()
+                    if parent_array:
+                        for p in parent_array:
+                            try:
+                                parents.append(wrap_as(p, "IFeature").Name)
+                            except Exception:
+                                pass
                     feat_info["parents"] = parents
                 except Exception:
                     feat_info["parents"] = []
@@ -210,7 +232,7 @@ def register_analysis_tools(mcp):
                         feat_info["parameters"] = {}
 
                 features.append(feat_info)
-                feat = feat.GetNextFeature()
+                feat = wrap_as(feat.GetNextFeature(), "IFeature")
 
             result = {
                 "total_features": len(features),
@@ -235,13 +257,7 @@ def register_analysis_tools(mcp):
         """
         try:
             import json
-            import math
             doc = get_active_doc()
-
-            # Set unit system
-            unit_map = {"mm": 1, "meters": 2, "inches": 3}
-            unit_val = unit_map.get(units.lower(), 1)
-            doc.SetUnitSystem(unit_val, 0, 0, 0, 0)
 
             # Apply density override if specified
             if density_override > 0:
@@ -250,35 +266,51 @@ def register_analysis_tools(mcp):
                 except Exception:
                     pass
 
-            # Get mass properties via IMassProperty
-            mass_prop = doc.Extension.GetMassProperties()
+            # IModelDocExtension::GetMassProperties(Accuracy, ByRef Status) - always
+            # returns mass/volume/surface area/center-of-mass in SI base units
+            # (kg, m^3, m^2, m) regardless of the document's display units, so
+            # unit conversion happens here in Python rather than via any
+            # document unit-setting call.
+            mass_prop, status = doc.Extension.GetMassProperties(1, 0)
             if mass_prop is None:
-                return "Error: Could not retrieve mass properties. Ensure the part has a closed volume."
+                return (
+                    f"Error: Could not retrieve mass properties (status code {status}). "
+                    "Ensure the part has a solid body with a closed volume "
+                    "(surface-only bodies have no mass properties)."
+                )
 
-            # Extract properties
             try:
                 mass = mass_prop.Mass
             except Exception:
                 mass = 0.0
             try:
-                volume = mass_prop.Volume
+                volume_m3 = mass_prop.Volume
             except Exception:
-                volume = 0.0
+                volume_m3 = 0.0
             try:
-                surface_area = mass_prop.SurfaceArea
+                surface_area_m2 = mass_prop.SurfaceArea
             except Exception:
-                surface_area = 0.0
-
-            # Center of mass
+                surface_area_m2 = 0.0
             try:
                 com = mass_prop.CenterOfMass
-                center_of_mass = {"x": round(com[0], 6), "y": round(com[1], 6), "z": round(com[2], 6)}
+                com_m = (com[0], com[1], com[2])
             except Exception:
-                center_of_mass = {"x": 0.0, "y": 0.0, "z": 0.0}
+                com_m = (0.0, 0.0, 0.0)
+
+            length_factor = {"mm": 1000.0, "meters": 1.0, "inches": 39.3700787401575}.get(
+                units.lower(), 1000.0
+            )
+            volume = volume_m3 * (length_factor ** 3)
+            surface_area = surface_area_m2 * (length_factor ** 2)
+            center_of_mass = {
+                "x": round(com_m[0] * length_factor, 6),
+                "y": round(com_m[1] * length_factor, 6),
+                "z": round(com_m[2] * length_factor, 6),
+            }
 
             # Get actual density
             try:
-                density = mass / volume if volume > 0 else 0.0
+                density = mass / volume_m3 if volume_m3 > 0 else 0.0
             except Exception:
                 density = 0.0
 
@@ -320,13 +352,13 @@ def register_analysis_tools(mcp):
             sel_mgr = doc.SelectionManager
 
             if entity1_name:
-                feat1 = doc.GetFeatureByName(entity1_name)
+                feat1 = doc.FeatureByName(entity1_name)
                 if feat1 is None:
                     return f"Error: Could not find entity '{entity1_name}'"
                 feat1.Select2(True, 0)
 
             if entity2_name:
-                feat2 = doc.GetFeatureByName(entity2_name)
+                feat2 = doc.FeatureByName(entity2_name)
                 if feat2 is None:
                     return f"Error: Could not find entity '{entity2_name}'"
                 feat2.Select2(True, 0)
@@ -405,13 +437,13 @@ def register_analysis_tools(mcp):
 
             # Select entities by name if provided
             if entity1_name:
-                feat1 = doc.GetFeatureByName(entity1_name)
+                feat1 = doc.FeatureByName(entity1_name)
                 if feat1 is None:
                     return f"Error: Could not find entity '{entity1_name}'"
                 feat1.Select2(True, 0)
 
             if entity2_name:
-                feat2 = doc.GetFeatureByName(entity2_name)
+                feat2 = doc.FeatureByName(entity2_name)
                 if feat2 is None:
                     return f"Error: Could not find entity '{entity2_name}'"
                 feat2.Select2(True, 0)
@@ -840,7 +872,7 @@ def register_analysis_tools(mcp):
                 }
 
                 try:
-                    feat = doc.GetFeatureByName(feat_name)
+                    feat = doc.FeatureByName(feat_name)
                     if feat is None:
                         comp["actual"] = "NOT_FOUND"
                         comp["status"] = "fail"

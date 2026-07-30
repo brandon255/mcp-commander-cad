@@ -2,7 +2,7 @@
 Drawing tools for Solidworks MCP server.
 Provides drawing creation, view insertion, annotations, BOM, and export tools.
 """
-from solidworks_mcp.api.connection import get_sw_app, get_active_doc
+from solidworks_mcp.api.connection import get_sw_app, get_active_doc, open_document
 
 # Sheet size constants
 SW_SHEET_A = 0
@@ -29,79 +29,109 @@ def register_drawing_tools(mcp):
     @mcp.tool()
     def create_drawing(part_filepath: str = "", sheet_size: str = "A") -> str:
         """Create a new drawing document, optionally from a part or assembly.
-        
+
+        If part_filepath is given, opens that document first (so views can
+        reference it), then creates a new blank drawing sheet - SolidWorks'
+        NewDrawing2 itself has no "base this drawing on a file" parameter;
+        the model has to already be open, and views are added to it
+        separately via add_standard_views/add_isometric_view.
+
         Args:
             part_filepath: Path to the part/assembly file to base the drawing on (empty for blank drawing)
             sheet_size: Sheet size - A, B, C, D, or E
         """
         try:
             sw_app = get_sw_app()
-            
+
             size_map = {
                 "a": SW_SHEET_A, "b": SW_SHEET_B,
                 "c": SW_SHEET_C, "d": SW_SHEET_D, "e": SW_SHEET_E,
             }
             size_val = size_map.get(sheet_size.lower(), SW_SHEET_A)
-            
+
             if part_filepath:
-                doc = sw_app.NewDrawing2(size_val, 0, 0, part_filepath)
-            else:
-                doc = sw_app.NewDrawing2(size_val, 0, 0, "")
-            
+                open_document(part_filepath)
+
+            # NewDrawing2(TemplateToUse, TemplateName, PaperSize, Width, Height):
+            # TemplateToUse=False means "use PaperSize", not a custom template.
+            doc = sw_app.NewDrawing2(False, "", size_val, 0, 0)
+
             if doc:
+                # NewDrawing2 does not reliably make the new document the
+                # active one under automation - explicitly activate it by
+                # its own title so get_active_doc() (used by every other
+                # drawing tool) actually returns this drawing, not whatever
+                # was active before.
+                try:
+                    sw_app.ActivateDoc3(doc.GetTitle, False, 0, None)
+                except Exception:
+                    pass
                 return f"Drawing document created (size {sheet_size.upper()})" + (f" from {part_filepath}" if part_filepath else "")
             return "Failed to create drawing document"
         except Exception as e:
             return f"Error creating drawing: {e}"
 
     @mcp.tool()
-    def add_standard_views(pos_x: float = 0.15, pos_y: float = 0.15, scale: float = 1.0) -> str:
-        """Add standard 3 views (front, top, right) to the drawing sheet.
-        
+    def add_standard_views(
+        model_path: str = "",
+        pos_x: float = 0.15,
+        pos_y: float = 0.15,
+        scale: float = 1.0,
+        spacing: float = 0.15,
+    ) -> str:
+        """Add front, top, and right (side) views to the drawing sheet.
+
+        SolidWorks has no single "standard 3 views" API call - each named
+        view (*Front, *Top, *Right) is created independently via
+        CreateDrawViewFromModelView3, laid out left-to-right on the sheet.
+
         Args:
-            pos_x: X position for the front view on the sheet (meters)
-            pos_y: Y position for the front view on the sheet (meters)
-            scale: View scale factor
+            model_path: Full path to the part/assembly these views reference
+                (required - CreateDrawViewFromModelView3 needs an explicit model)
+            pos_x, pos_y: Position for the front view on the sheet (meters)
+            scale: View scale factor (applied to each view after creation)
+            spacing: Horizontal gap between views (meters)
         """
         try:
-            sw_app = get_sw_app()
             doc = get_active_doc()
-            drawing = doc
-            
-            view = drawing.CreateDrawViewFromModelView3(
-                "",                 # model name (empty = referenced model)
-                "*Front",           # view name
-                pos_x, pos_y,       # position
-                scale               # scale
-            )
-            
-            if view:
-                result = drawing.CreateStandard3Views(view, True, True)
-                if result:
-                    return f"Standard 3 views added at ({pos_x}, {pos_y}), scale {scale}"
-                return "Front view created but standard 3 views failed"
-            return "Failed to create front view"
+            created = []
+            for i, view_name in enumerate(("*Front", "*Top", "*Right")):
+                view = doc.CreateDrawViewFromModelView3(
+                    model_path, view_name, pos_x + i * spacing, pos_y, 0
+                )
+                if view is None:
+                    return f"Failed to create {view_name} view" + (f" (created so far: {created})" if created else "")
+                try:
+                    view.ScaleDecimal = scale
+                except Exception:
+                    pass
+                created.append(view_name)
+            return f"Created views {created} starting at ({pos_x}, {pos_y}), scale {scale}"
         except Exception as e:
             return f"Error adding standard views: {e}"
 
     @mcp.tool()
-    def add_isometric_view(pos_x: float = 0.4, pos_y: float = 0.15, scale: float = 1.0) -> str:
+    def add_isometric_view(model_path: str = "", pos_x: float = 0.4, pos_y: float = 0.15, scale: float = 1.0) -> str:
         """Add an isometric view to the drawing sheet.
-        
+
         Args:
+            model_path: Full path to the part/assembly this view references
             pos_x: X position on the sheet
             pos_y: Y position on the sheet
             scale: View scale factor
         """
         try:
             doc = get_active_doc()
-            drawing = doc
-            
-            view = drawing.CreateDrawViewFromModelView3(
-                "", "*Isometric", pos_x, pos_y, scale
+
+            view = doc.CreateDrawViewFromModelView3(
+                model_path, "*Isometric", pos_x, pos_y, 0
             )
-            
+
             if view:
+                try:
+                    view.ScaleDecimal = scale
+                except Exception:
+                    pass
                 return f"Isometric view added at ({pos_x}, {pos_y}), scale {scale}"
             return "Failed to create isometric view"
         except Exception as e:

@@ -1,0 +1,15 @@
+{
+  "name": "rhino-mcp",
+  "version": "0.1.0",
+  "description": "MCP server for Rhino automation via an in-process plugin (RhinoMCPBridge) and local HTTP relay. Read/execute/update tool shape, matching the Fusion 360 connector rather than the SolidWorks one.",
+  "permissions": {
+    "writeTiers": ["hot", "warm"],
+    "allowedStages": ["read", "execute", "update", "diagnostics"]
+  },
+  "tools": [
+    { "name": "rhino_connection_diagnostics", "description": "Report the Rhino plugin's host PID, version, active document, and bridge listener status" },
+    { "name": "rhino_read", "description": "Query-only: document info, object list, geometry/bounding box, viewport screenshot" },
+    { "name": "rhino_execute", "description": "Run an arbitrary rhinoscriptsyntax/RhinoCommon Python snippet inside the plugin's main-thread context" },
+    { "name": "rhino_update", "description": "Curated named operations: import/export, mesh-to-NURBS cleanup pipeline, silhouette extraction, extrude, scale, boolean ops" }
+  ]
+}
