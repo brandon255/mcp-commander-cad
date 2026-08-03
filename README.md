@@ -1,6 +1,6 @@
 # MCP Commander CAD MCP — Voice-Controlled CAD Automation
 
-MCP Commander is a monorepo containing **four packages** that work together to provide **voice-controlled CAD automation with vision and analysis** for Solidworks and Fusion 360 using the Model Context Protocol (MCP).
+MCP Commander is a monorepo containing **11 packages** that work together to provide **voice-controlled CAD automation with vision and analysis** for Solidworks, Fusion 360, Onshape, and Rhino using the Model Context Protocol (MCP).
 
 ## Architecture
 
@@ -39,8 +39,18 @@ MCP Commander is a monorepo containing **four packages** that work together to p
 |---------|-------------|-------|----------|
 | [solidworks-mcp](packages/solidworks-mcp/) | MCP server for Solidworks via COM API | 82 creation tools | Python |
 | [fusion360-mcp](packages/fusion360-mcp/) | MCP server for Fusion 360 via REST API | 78 creation tools | Python |
-| [mcp-commander-analysis](packages/mcp-commander-analysis/) | **NEW** — Vision, OCR, geometry, DFM, RAG tutorial search | 11 analysis tools | Python |
+| [onshape-mcp](packages/onshape-mcp/) | MCP server for Onshape via REST API (sketch/feature/drawing/assembly) | 33 tools | Python |
+| [rhino-mcp](packages/rhino-mcp/) | MCP server for Rhino via in-process plugin + local HTTP bridge (not COM -- see package README) | 4 tools | Python |
+| [file-translator-mcp](packages/file-translator-mcp/) | CAD file format conversion + mesh repair (STL/STEP/IGES/OBJ/PLY/3MF/DXF) | 20 tools | Python |
+| [mcp-commander-analysis](packages/mcp-commander-analysis/) | Vision, OCR, geometry, DFM, RAG tutorial search | 11 analysis tools | Python |
+| [mcp-commander-cognitive](packages/mcp-commander-cognitive/) | Background engineering-design cognition (divergent/convergent thinking, cross-domain transfer, pattern recognition, spatial reasoning, etc.) | 9 tools | Python |
+| [mcp-commander-ideas](packages/mcp-commander-ideas/) | Design ideation, alternative generation, idea capture/search | 5 tools | Python |
+| [mcp-commander-materials](packages/mcp-commander-materials/) | Material search, property lookup, substitution, compatibility, cost | 7 tools | Python |
+| [mcp-commander-quoting](packages/mcp-commander-quoting/) | Cost/lead-time estimation and quote generation | 6 tools | Python |
+| [mcp-commander-scorecard](packages/mcp-commander-scorecard/) | Weighted scoring for comparing design alternatives | 4 tools | Python |
 | [mcp-commander-agent](packages/mcp-commander-agent/) | AI orchestrator with voice, LLM, MCP client | N/A (client) | Python |
+
+**226 tools total** across the 10 tool-providing cartridges (excludes the orchestrator).
 
 ## What's New: The Analysis Layer
 

@@ -10,8 +10,15 @@ You are installing **MCP Commander** — a voice-AI agent framework for CAD soft
 
 **The project has:**
 - 1 Node.js Core OS (CLI + runtime)
-- 10 Python MCP cartridge packages (each is an installable pip package)
-- 1 Fusion 360 bridge add-in (Python script that runs INSIDE Fusion 360)
+- 11 Python MCP cartridge packages (each is an installable pip package),
+  226 tools total. The 4 CAD platform cartridges are fusion360-mcp (78
+  tools), solidworks-mcp (82 tools), onshape-mcp (33 tools), and
+  rhino-mcp (4 tools) -- rhino-mcp was previously missing from this
+  install flow (real code, never wired in); fixed below.
+- 1 Fusion 360 bridge add-in (Python script that runs INSIDE Fusion 360,
+  copied into Fusion's Scripts folder)
+- 1 Rhino bridge plugin (Python script that runs INSIDE Rhino, loaded as
+  a startup script -- different mechanism than Fusion's, see Step 6b)
 - Symlinks from `cartridges/` → `packages/` for Core OS discovery
 - A Makefile with shortcuts
 
@@ -57,10 +64,11 @@ Install every package in editable mode (`-e`) so changes to source are reflected
 ```bash
 cd <REPO_ROOT>
 
-# Core CAD platform cartridges (the 3 you'll use with actual CAD software)
+# Core CAD platform cartridges (the 4 you'll use with actual CAD software)
 pip install -e packages/fusion360-mcp
 pip install -e packages/onshape-mcp
 pip install -e packages/solidworks-mcp
+pip install -e packages/rhino-mcp
 
 # File format translator (STL↔STEP↔IGES↔OBJ etc)
 pip install -e packages/file-translator-mcp
@@ -95,19 +103,15 @@ cd <REPO_ROOT>
 ls -la cartridges/
 ```
 
-You should see 10 symlinks. If `file-translator-mcp` is missing:
+You should see 11 symlinks. If any are missing, create them:
 
 ```bash
 cd <REPO_ROOT>/cartridges
-ln -sf ../packages/file-translator-mcp/ file-translator-mcp
-```
-
-If any OTHER symlinks are missing, create them:
-
-```bash
 ln -sf ../packages/fusion360-mcp/ fusion360-mcp
 ln -sf ../packages/onshape-mcp/ onshape-mcp
 ln -sf ../packages/solidworks-mcp/ solidworks-mcp
+ln -sf ../packages/rhino-mcp/ rhino-mcp
+ln -sf ../packages/file-translator-mcp/ file-translator-mcp
 ln -sf ../packages/mcp-commander-agent/ mcp-commander-agent
 ln -sf ../packages/mcp-commander-analysis/ mcp-commander-analysis
 ln -sf ../packages/mcp-commander-cognitive/ mcp-commander-cognitive
@@ -122,7 +126,7 @@ Verify all links resolve:
 ls cartridges/*/cartridge.json
 ```
 
-Should list 10 cartridge.json files.
+Should list 11 cartridge.json files.
 
 ---
 
@@ -170,6 +174,28 @@ cp packages/fusion360-mcp/bridge/MCPCommanderBridge.manifest ~/Library/Applicati
 
 ---
 
+## STEP 6b — Rhino Bridge Plugin (Different Mechanism Than Fusion)
+
+Unlike Fusion's bridge, this is not a file-copy step -- it's loaded manually
+inside Rhino itself, once:
+
+1. Open Rhino 8.
+2. Open the Script Editor (or use `-RunPythonScript`).
+3. Run `packages/rhino-mcp/bridge/RhinoMCPBridge.py` as a startup script.
+4. It starts a local HTTP listener on `127.0.0.1:8765` and holds a live
+   reference to the active document -- no external COM-style attach step,
+   unlike SolidWorks.
+5. Tell the user this step must be repeated each time they restart Rhino,
+   unless they set it up as an auto-loading startup script in Rhino's own
+   settings (their choice, not something to do without asking).
+
+**Verify**: with the bridge running, `rhino-mcp`'s
+`rhino_connection_diagnostics` tool should report the plugin's host PID,
+Rhino version, active document, and listener status -- check this first
+before assuming any other Rhino tool works.
+
+---
+
 ## STEP 7 — Claude Desktop Configuration (Optional but Recommended)
 
 If the user wants to use any cartridge standalone with Claude Desktop, create/update the config file:
@@ -194,6 +220,10 @@ If the user wants to use any cartridge standalone with Claude Desktop, create/up
         "ONSHAPE_ACCESS_KEY": "<USER NEEDS TO FILL THIS IN>",
         "ONSHAPE_SECRET_KEY": "<USER NEEDS TO FILL THIS IN>"
       }
+    },
+    "rhino": {
+      "command": "rhino-mcp",
+      "args": []
     },
     "file-translator": {
       "command": "file-translator-mcp",
@@ -239,13 +269,14 @@ echo ""
 echo "=== 2. Console script entry points ==="
 which fusion360-mcp
 which onshape-mcp
+which rhino-mcp
 which file-translator-mcp
 which mcp-commander 2>/dev/null || echo "mcp-commander entry point not found (OK if not configured)"
 
 echo ""
 echo "=== 3. Cartridge symlinks ==="
 ls cartridges/*/cartridge.json | wc -l
-echo "Expected: 10"
+echo "Expected: 11"
 
 echo ""
 echo "=== 4. Node.js Core OS ==="
@@ -260,6 +291,10 @@ print('fusion360-mcp: OK')
 python3 -c "
 from onshape_mcp.api.connection import OnshapeConnection
 print('onshape-mcp: OK')
+"
+python3 -c "
+from rhino_mcp.api.connection import RhinoConnection
+print('rhino-mcp: OK')
 "
 python3 -c "
 from file_translator_mcp.api.converter import get_file_info
@@ -293,8 +328,12 @@ echo "=== DONE ==="
 Tell the user this summary:
 
 ### What's Installed
-- **10 MCP cartridges** (190+ CAD tools across Fusion 360, SolidWorks, Onshape, file translation, analysis, cognitive, ideas, materials, quoting, scorecard)
+- **11 MCP cartridges, 226 tools total**: fusion360-mcp (78), solidworks-mcp (82),
+  onshape-mcp (33), rhino-mcp (4), file-translator-mcp (20), mcp-commander-analysis (11),
+  mcp-commander-cognitive (9), mcp-commander-materials (7), mcp-commander-quoting (6),
+  mcp-commander-ideas (5), mcp-commander-scorecard (4)
 - **Fusion 360 bridge add-in** deployed to Fusion's Scripts folder
+- **Rhino bridge plugin** loaded as a Rhino startup script (manual, repeats each Rhino restart unless the user sets up auto-load themselves)
 - **Claude Desktop config** ready (needs Onshape API keys filled in)
 - **Node.js Core OS** ready to run
 
@@ -311,6 +350,12 @@ Tell the user this summary:
 1. Get API keys from https://cad.onshape.com → Account → API Keys
 2. Set environment variables (see Step 8)
 3. Run: `onshape-mcp`
+
+**Rhino:**
+1. Open Rhino 8
+2. Load `packages/rhino-mcp/bridge/RhinoMCPBridge.py` as a startup script (Step 6b) -- do this every session unless auto-load is configured
+3. In a terminal: `rhino-mcp`
+4. Ask for `rhino_connection_diagnostics` first to confirm the bridge is actually connected before trying anything else
 
 **File Translator (STL → STEP):**
 1. Run: `file-translator-mcp`
@@ -349,6 +394,7 @@ print(mesh_info)
 | Fusion 360 bridge doesn't appear in Scripts | Verify files are in the correct Scripts folder (Step 6). Restart Fusion. |
 | `fusion360-mcp` command not found | Ensure venv is active and `pip install -e packages/fusion360-mcp` succeeded |
 | Onshape returns 401 | Check API keys are set correctly (no extra whitespace) |
+| Rhino tools time out / `rhino_connection_diagnostics` fails | The bridge plugin (Step 6b) isn't loaded, or was unloaded after a Rhino restart -- it does not persist automatically |
 | Node.js CLI errors | Run `npm install` in `core/` directory |
 
 ---

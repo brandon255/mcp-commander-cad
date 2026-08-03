@@ -24,12 +24,27 @@ If Python is missing or below 3.10, install from python.org or via `winget insta
 
 ---
 
-## STEP 2 — Clone the Repo
+## STEP 2 — Clone the Repo (skip if it already exists)
+
+**Check first** — this repo may already be cloned on this machine from earlier
+work:
 
 ```powershell
+Test-Path .git    # if you're already inside a clone, this is True -- skip cloning
+```
+
+If you're not already inside a clone, find or clone it:
+
+```powershell
+# If it's already cloned somewhere on this machine, cd into that folder instead
+# of cloning a second copy. Only run this if it genuinely isn't present yet:
 git clone https://github.com/brandon255/mcp-commander-cad.git
 cd mcp-commander-cad
 ```
+
+Running `git clone` again on top of an existing clone creates a duplicate
+folder, not an update — if one already exists, `cd` into it and `git pull`
+instead.
 
 ---
 
